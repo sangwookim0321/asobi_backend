@@ -17,32 +17,32 @@ async function gpt(assistantId, prompt) {
 		assistant_id: assistantId,
 	})
 
-    async function checkRunStatus(threadId, runId) {
-        for (let i = 0; i < 1; i++) {
-          // 최대 10번 시도
-          const runStatus = await openai.beta.threads.runs.retrieve(threadId, runId)
-    
-          console.log("runStatus: ", runStatus)
-          if (runStatus.status === "completed") {
-            let messages = await openai.beta.threads.messages.list(threadId, )
-            return messages.data.map((msg) => ({
-              role: msg.role,
-              content: msg.content[0].text.value,
-              threadId: threadId,
-            }))
-          }
-    
-          // 1초 간격으로 재시도
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-        }
-        throw new Error("Run did not complete in time.")
+    // 작업 완료 여부를 체크하는 함수
+  async function checkRunStatus(threadId, runId) {
+    for (let i = 0; i < 30; i++) {
+      // 최대 30번 시도
+      const runStatus = await openai.beta.threads.runs.retrieve(threadId, runId)
+
+      if (runStatus.status === "completed") {
+        let messages = await openai.beta.threads.messages.list(threadId, {limit: 1, order: 'desc'})
+        return messages.data.map((msg) => ({
+          role: msg.role,
+          content: msg.content[0].text.value,
+          threadId: threadId,
+        }))
       }
-    
-      return await checkRunStatus(thread.id, run.id)
+
+      // 4초 간격으로 재시도
+      await new Promise((resolve) => setTimeout(resolve, 4000))
+    }
+    throw new Error("Run did not complete in time.")
+  }
+
+  return await checkRunStatus(thread.id, run.id)
 }
 
-router.post('/dream-helper', async (req, res) => {
-    	// ---------------------------- 꿈 해몽 GPT 어시스턴트 호출 ----------------------------
+router.post('/gpt-helper', async (req, res) => {
+    	// ---------------------------- GPT 어시스턴트 호출 ----------------------------
     const { type, prompt } = req.body
 
     if (!type) {
@@ -51,18 +51,23 @@ router.post('/dream-helper', async (req, res) => {
             message: 'Type is required',
         })
     }
-    if (!prompt) {
+    if (type === 'dream' && !prompt) {
         return res.status(400).json({
             status: "error",
             message: 'Prompt is required',
         })
     }
+    if (type === 'lotto' && !prompt) {
+        prompt = '로또 번호 추천해줘'
+    }
+
 
     let assistantId = ''
     if (type === 'dream') {
         assistantId = process.env.DREAM_ASSISTANT_ID
+    } else if (type === 'lotto') {
+        assistantId = process.env.LOTTO_ASSISTANT_ID
     }
-    console.log('assistantId: ', assistantId)
 
     try {
         const response = await gpt(assistantId, prompt)
@@ -73,10 +78,10 @@ router.post('/dream-helper', async (req, res) => {
             data: response,
         })
     } catch (err) {
-        console.error("/gpt-api/dream-helper error: ", err)
+        console.error("/gpt-api/gpt-helper error: ", err)
         res.status(500).json({
             status: "error",
-            message: "Dream GPT Assistant 호출 중 서버 오류가 발생했습니다.",
+            message: "GPT Assistant 호출 중 서버 오류가 발생했습니다.",
             error: err,
         })
     }
