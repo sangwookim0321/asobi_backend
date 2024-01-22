@@ -43,7 +43,7 @@ async function gpt(assistantId, prompt) {
 
 router.post('/gpt-helper', async (req, res) => {
     	// ---------------------------- GPT 어시스턴트 호출 ----------------------------
-    const { type, prompt } = req.body
+    let { type, prompt } = req.body
 
     if (!type) {
         return res.status(400).json({
@@ -114,6 +114,18 @@ router.delete('/gpt-thread', async (req, res) => {
 			message: 'GPT Assistant Thread 삭제 중 서버 오류가 발생했습니다.',
 		})
 	}
+})
+
+router.post('/test-api', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'GPT API Test',
+        data: {
+            content: '[15, 26, 28, 34, 41, 42, 44]',
+            role: 'assistant',
+            threadId: 'thrd_1J7G5H4Y8QV7X4X5',
+        }
+    })
 })
 
 module.exports = router
