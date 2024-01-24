@@ -116,6 +116,48 @@ router.delete('/gpt-thread', async (req, res) => {
 	}
 })
 
+router.post('/gpt-chat', async (req, res) => {
+    const { prompt, type } = req.body
+
+    if (!prompt) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Prompt is required',
+        })
+    }
+    if (!type) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Type is required',
+        })
+    }
+
+    let assistantId = ''
+    if (type === 'MODEL_1') {
+        assistantId = process.env.CHAT_ASSISTANT_MODEL_1_ID
+    } else if (type === 'MODEL_2') {
+        assistantId = process.env.CHAT_ASSISTANT_MODEL_2_ID
+    }
+
+    try {
+        const response = await gpt(assistantId, prompt)
+
+        res.status(200).json({
+            status: 'success',
+            message: 'GPT API response',
+            data: response,
+        })
+    } catch (err) {
+        console.error('/gpt-api/gpt-chat Error : ', err)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'GPT Assistant 호출 중 서버 오류가 발생했습니다.',
+            error: err,
+        })
+    }
+})
+
 router.post('/test-api', (req, res) => {
     res.status(200).json({
         status: 'success',
