@@ -4,9 +4,14 @@ const router = express.Router()
 
 const openai = new OpenAI(process.env.OPENAI_API_KEY)
 
-async function gpt(assistantId, prompt) {
+async function gpt(assistantId, prompt, threadId) {
 	// ---------------------------- OPEN AI GPT 호출 ----------------------------
-    thread = await openai.beta.threads.create()
+    let thread = {}
+    if (!threadId) {
+        thread = await openai.beta.threads.create()
+    } else {
+        thread.id = threadId
+    }
     
     await openai.beta.threads.messages.create(thread.id, {
         role: 'user',
@@ -117,7 +122,7 @@ router.delete('/gpt-thread', async (req, res) => {
 })
 
 router.post('/gpt-chat', async (req, res) => {
-    const { prompt, type } = req.body
+    const { prompt, type, threadId } = req.body
 
     if (!prompt) {
         return res.status(400).json({
@@ -140,7 +145,7 @@ router.post('/gpt-chat', async (req, res) => {
     }
 
     try {
-        const response = await gpt(assistantId, prompt)
+        const response = await gpt(assistantId, prompt, threadId)
 
         res.status(200).json({
             status: 'success',
@@ -149,6 +154,37 @@ router.post('/gpt-chat', async (req, res) => {
         })
     } catch (err) {
         console.error('/gpt-api/gpt-chat Error : ', err)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'GPT Assistant 호출 중 서버 오류가 발생했습니다.',
+            error: err,
+        })
+    }
+})
+
+router.post('/gpt-mbit-helper', async (req, res) => {
+    const { prompt, threadId } = req.body
+
+    if (!prompt) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Prompt is required',
+        })
+    }
+
+    const assistantId = process.env.MBIT_ASSISTANT_ID
+
+    try {
+        const response = await gpt(assistantId, prompt, threadId)
+
+        res.status(200).json({
+            status: 'success',
+            message: 'GPT API response',
+            data: response,
+        })
+    } catch (err) {
+        console.error('/gpt-api/gpt-mbit-helper Error : ', err)
 
         res.status(500).json({
             status: 'error',
