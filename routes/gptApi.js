@@ -194,6 +194,37 @@ router.post('/gpt-mbit-helper', async (req, res) => {
     }
 })
 
+router.post('/beta-kadan-ai', async (req, res) => {
+    const { prompt, threadId } = req.body
+
+    if (!prompt) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Prompt is required',
+        })
+    }
+
+    const assistantId = process.env.KADAN_AI_ASSISTANT_ID
+
+    try {
+        const response = await gpt(assistantId, prompt, threadId)
+
+        res.status(200).json({
+            status: 'success',
+            message: 'GPT API response',
+            data: response,
+        })
+    } catch (err) {
+        console.error('/gpt-api/beta-kadan-ai Error : ', err)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'GPT Assistant 호출 중 서버 오류가 발생했습니다.',
+            error: err,
+        })
+    }
+})
+
 router.post('/test-api', (req, res) => {
     res.status(200).json({
         status: 'success',
