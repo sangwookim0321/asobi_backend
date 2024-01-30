@@ -30,8 +30,8 @@ app.use('/gpt-api', gptApiRouter)
 // 프로덕션 환경에서는 HTTPS 서버 실행
 if (process.env.NODE_ENV === 'production') {
     const options = {
-        key: fs.readFileSync('/etc/letsencrypt/live/pointjumpit.duckdns.org/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/pointjumpit.duckdns.org/fullchain.pem')
+        key: fs.readFileSync('/home/kimsangwoo/ssl/privkey.pem'),
+        cert: fs.readFileSync('/home/kimsangwoo/ssl/fullchain.pem')
     }
 
     https.createServer(options, app).listen(PORT, () => {
