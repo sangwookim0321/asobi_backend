@@ -9,8 +9,10 @@ const app = express()
 // 환경 설정 파일 로드
 if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env.production' })
+    console.log('Production mode')
 } else {
     dotenv.config({ path: '.env.development' })
+    console.log('Development mode')
 }
 
 const PORT = process.env.PORT || 9002
