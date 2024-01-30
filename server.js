@@ -12,7 +12,12 @@ if (process.env.NODE_ENV === 'production') {
 const PORT = process.env.PORT || 9002
 
 app.use(express.json())
-app.use(cors())
+const corsOptions = {
+    origin: 'https://asobi-hardy.vercel.app',
+    // credentials: true, // 인증 정보를 요청과 함께 보낼지 여부
+    optionSuccessStatus: 200,
+}
+app.use(cors(corsOptions)) // 프론트 도메인으로 변경
 
 const gptApiRouter = require('./routes/gptApi')
 app.use('/gpt-api', gptApiRouter)

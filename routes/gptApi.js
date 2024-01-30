@@ -229,11 +229,7 @@ router.post('/test-api', (req, res) => {
     res.status(200).json({
         status: 'success',
         message: 'GPT API Test',
-        data: {
-            content: '[15, 26, 28, 34, 41, 42, 44]',
-            role: 'assistant',
-            threadId: 'thrd_1J7G5H4Y8QV7X4X5',
-        }
+        data: {}
     })
 })
 
